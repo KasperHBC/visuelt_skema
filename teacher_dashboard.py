@@ -31,25 +31,31 @@ def get_date_range_from_weekdays(start_week, end_week, year=2024):
     return weekdays
 
 def plot_dates(all_dates, work_dates):
+    # Konverter work_dates fra en liste af Timestamps til en DatetimeIndex
+    work_dates_index = pd.DatetimeIndex(work_dates)
+
     df_dates = pd.DataFrame({
         'Date': all_dates,
-        'Type': all_dates.isin(work_dates).map({True: 'Arbejdsdag', False: 'Fridag'}),
-        'WeekNumber': all_dates.isocalendar().week
+        'IsWorkday': all_dates.isin(work_dates_index)
     })
-    
-    df_dates = df_dates.groupby('WeekNumber').agg({
-        'Date': ['min', 'max'],
-        'Type': 'first'
-    }).reset_index()
-    
-    # Renaming columns
-    df_dates.columns = ['WeekNumber', 'Start', 'Finish', 'Type']
 
-    # Add one day to 'Finish' so that the last day is included in the timeline
-    df_dates['Finish'] = df_dates['Finish'] + pd.Timedelta(days=1)
+    # Konverter 'IsWorkday' til 'Type'
+    df_dates['Type'] = df_dates['IsWorkday'].map({True: 'Arbejdsdag', False: 'Fridag'})
+
+    # Få ugenummer for hver dato
+    df_dates['WeekNumber'] = df_dates['Date'].dt.isocalendar().week
+
+    # Gruppér efter ugenummer og find det minimum og maksimum dato for hver gruppe
+    df_grouped = df_dates.groupby('WeekNumber').agg({'Date': ['min', 'max'], 'Type': 'first'}).reset_index()
+    
+    # Renaming columns efter gruppering
+    df_grouped.columns = ['WeekNumber', 'Start', 'Finish', 'Type']
+
+    # Add one day to 'Finish' så at den sidste dag er inkluderet i tidslinjen
+    df_grouped['Finish'] = df_grouped['Finish'] + pd.Timedelta(days=1)
     
     fig = px.timeline(
-        df_dates, 
+        df_grouped, 
         x_start="Start", 
         x_end="Finish", 
         y="Type", 
@@ -60,11 +66,11 @@ def plot_dates(all_dates, work_dates):
     )
     
     fig.update_traces(textposition='inside', marker=dict(line=dict(width=1, color='black')))
-    fig.update_layout(xaxis=dict(tickformat='%d %B %Y', tickmode='linear'))
+    fig.update_layout(xaxis=dict(tickformat='%U', tickmode='linear'))
     fig.update_yaxes(categoryorder='total ascending')
 
-    # Skjul ugenumre for fridage
-    fig.for_each_trace(lambda t: t.update(textfont_color=t.marker.color, text=t.text if t.name == 'Arbejdsdag' else ['']))
+    # Skjul teksten for fridage
+    fig.for_each_trace(lambda t: t.update(text="") if t.name == 'Fridag' else None)
     
     return fig
 
