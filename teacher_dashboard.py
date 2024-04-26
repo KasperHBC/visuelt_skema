@@ -22,7 +22,10 @@ def find_teacher_dates(df, initials, relevant_teacher_columns):
 
 
 def get_date_range_from_weekdays(start_week, end_week, year=2024):
-    all_dates = get_date_range_from_weeks(start_week, end_week, year)
+    first_day_of_year = datetime.datetime(year, 1, 1)
+    start_date = first_day_of_year + datetime.timedelta(days=(start_week - 1) * 7 - first_day_of_year.weekday())
+    end_date = first_day_of_year + datetime.timedelta(days=(end_week * 7) - first_day_of_year.weekday())
+    all_dates = pd.date_range(start=start_date, end=end_date)
     # Filtrer for at udelukke lørdage (5) og søndage (6)
     weekdays = all_dates[~all_dates.weekday.isin([5, 6])]
     return weekdays
@@ -82,9 +85,10 @@ def main():
         work_dates = find_teacher_dates(df, teacher_initials, relevant_teacher_columns)
         work_dates = [pd.Timestamp(date) for date in work_dates]
         weeks = sheet_name.split('-')
-        all_dates = get_date_range_from_weekdays(int(weeks[0]), int(weeks[1]))  # Brug den nye funktion her
+        all_dates = get_date_range_from_weekdays(int(weeks[0]), int(weeks[1]), year=2024)  # Tjek at året passer
         fig = plot_dates(all_dates, work_dates)
         st.plotly_chart(fig)
+
 
 if __name__ == "__main__":
     main()
