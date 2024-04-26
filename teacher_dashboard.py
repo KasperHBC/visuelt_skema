@@ -32,8 +32,7 @@ def plot_dates(all_dates, work_dates):
                       labels={'Type': 'Dagstype'}, color_discrete_map={'Arbejdsdag': 'blue', 'Fridag': 'grey'})
     fig.update_yaxes(categoryorder='total ascending')
     return fig
-    else:
-        return None
+ 
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
