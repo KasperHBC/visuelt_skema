@@ -79,12 +79,12 @@ def main():
     teacher_initials = st.selectbox('Vælg lærer initialer:', ['Ochr', 'AzUm', 'PeJo', 'PaDa', 'HeTh', 'BjPo', 'JeKN', 'ChLy', 'PeBN', 'HeGr', 'BriR', 'MaGS', 'KasC', 'ChPe'])
 
     if st.button('Vis Datoer'):
-    work_dates = find_teacher_dates(df, teacher_initials, relevant_teacher_columns)
-    work_dates = [pd.Timestamp(date) for date in work_dates]
-    weeks = sheet_name.split('-')
-    all_dates = get_date_range_from_weekdays(int(weeks[0]), int(weeks[1]))  # Brug den nye funktion her
-    fig = plot_dates(all_dates, work_dates)
-    st.plotly_chart(fig)
+        work_dates = find_teacher_dates(df, teacher_initials, relevant_teacher_columns)
+        work_dates = [pd.Timestamp(date) for date in work_dates]
+        weeks = sheet_name.split('-')
+        all_dates = get_date_range_from_weekdays(int(weeks[0]), int(weeks[1]))  # Brug den nye funktion her
+        fig = plot_dates(all_dates, work_dates)
+        st.plotly_chart(fig)
 
 if __name__ == "__main__":
     main()
