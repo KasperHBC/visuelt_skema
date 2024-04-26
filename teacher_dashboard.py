@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 # Funktion til at indlæse data (du kan tilpasse stien eller tilføje argumenter efter behov)
 def load_data():
@@ -14,7 +15,20 @@ def find_teacher_dates(df, initials, relevant_teacher_columns):
         date_list.extend(dates.dropna().tolist())
     return date_list
 
-# Hoveddel af Streamlit app
+def plot_dates(dates):
+    if dates:
+        # Opret en DataFrame for datoerne
+        df_dates = pd.DataFrame({'Start': dates, 'Finish': dates})
+        df_dates['Event'] = 'Arbejdsdag'
+        
+        # Brug plotly til at skabe en Gantt-lignende tidslinje
+        fig = px.timeline(df_dates, x_start="Start", x_end="Finish", y="Event", labels={"Event": "Type"})
+        fig.update_yaxes(autorange="reversed")  # Sikrer, at tidslinjen vises fra top til bund
+        return fig
+    else:
+        return None
+
+# Opdater 'main' funktionen til at inkludere visualisering
 def main():
     df = load_data()
     relevant_teacher_columns = [col for col in df.columns if 'Lærer' in col and df.columns.get_loc(col) < df.columns.get_loc("KODER")]
@@ -26,10 +40,13 @@ def main():
         dates = find_teacher_dates(df, teacher_initials, relevant_teacher_columns)
         if dates:
             st.write('Datoer for', teacher_initials, ':')
-            st.write(dates)
+            fig = plot_dates(dates)
+            st.plotly_chart(fig)
         else:
             st.write('Ingen datoer fundet for valgte lærer.')
 
 if __name__ == "__main__":
     main()
+
+
 
