@@ -27,15 +27,31 @@ def get_date_range_from_weeks(start_week, end_week, year=2024):
     end_date = first_day_of_year + datetime.timedelta(days=(end_week * 7) - first_day_of_year.weekday())
     return pd.date_range(start=start_date, end=end_date)
 def plot_dates(all_dates, work_dates):
-    # Opret en DataFrame med alle dage og marker arbejdsdage
-    df_dates = pd.DataFrame({'Date': all_dates})
-    df_dates['Type'] = df_dates['Date'].apply(lambda x: 'Arbejdsdag' if x in work_dates else 'Fridag')
+    df_dates = pd.DataFrame({
+        'Date': all_dates,
+        'Type': all_dates.isin(work_dates).map({True: 'Arbejdsdag', False: 'Fridag'})
+    })
     
-    # Brug plotly til at visualisere
-    fig = px.timeline(df_dates, x_start="Date", x_end="Date", y="Type", color='Type',
-                      labels={'Type': 'Dagstype'}, color_discrete_map={'Arbejdsdag': 'blue', 'Fridag': 'grey'})
+    # Tilføj sluttidspunktet som starttidspunktet plus én dag for at fylde hele dagen ud i tidslinjen
+    df_dates['Start'] = df_dates['Date']
+    df_dates['Finish'] = df_dates['Date'] + pd.Timedelta(days=1)
+    
+    fig = px.timeline(
+        df_dates, 
+        x_start="Start", 
+        x_end="Finish", 
+        y="Type", 
+        color='Type',
+        labels={'Type': 'Dagstype'}, 
+        color_discrete_map={'Arbejdsdag': 'blue', 'Fridag': 'grey'}
+    )
+    
+    # Opdater layoutet til at fjerne de tidsspecifikke detaljer på x-aksen
+    fig.update_layout(xaxis=dict(tickformat='%d %B %Y', tickmode='linear'))
     fig.update_yaxes(categoryorder='total ascending')
+    
     return fig
+
  
 
 # Opdater 'main' funktionen til at inkludere visualisering
