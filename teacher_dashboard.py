@@ -27,9 +27,11 @@ def get_date_range_from_weeks(start_week, end_week, year=2024):
     end_date = first_day_of_year + datetime.timedelta(days=(end_week * 7) - first_day_of_year.weekday())
     return pd.date_range(start=start_date, end=end_date)
 def plot_dates(all_dates, work_dates):
+    # Omdan all_dates fra en date_range til en Series
+    all_dates_series = pd.Series(all_dates)
     df_dates = pd.DataFrame({
-        'Date': all_dates,
-        'Type': all_dates.isin(work_dates).map({True: 'Arbejdsdag', False: 'Fridag'})
+        'Date': all_dates_series,
+        'Type': all_dates_series.isin(work_dates).map({True: 'Arbejdsdag', False: 'Fridag'})
     })
     
     # Tilføj sluttidspunktet som starttidspunktet plus én dag for at fylde hele dagen ud i tidslinjen
@@ -56,13 +58,14 @@ def plot_dates(all_dates, work_dates):
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
+    st.title('Lærer Kalender Dashboard')
+
     sheet_names = get_sheet_names()
     sheet_name = st.selectbox('Vælg et sheet:', sheet_names)
     
     df = load_data(sheet_name)
     relevant_teacher_columns = [col for col in df.columns if 'Lærer' in col and df.columns.get_loc(col) < df.columns.get_loc("KODER")]
 
-    st.title('Lærer Kalender Dashboard')
     teacher_initials = st.selectbox('Vælg lærer initialer:', ['Ochr', 'AzUm', 'PeJo', 'PaDa', 'HeTh', 'BjPo', 'JeKN', 'ChLy', 'PeBN', 'HeGr', 'BriR', 'MaGS', 'KasC', 'ChPe'])
 
     if st.button('Vis Datoer'):
