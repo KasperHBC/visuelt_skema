@@ -4,8 +4,12 @@ import plotly.express as px
 import datetime
 
 # Funktion til at indlæse data (du kan tilpasse stien eller tilføje argumenter efter behov)
-def load_data():
-    return pd.read_excel("./Data 2024 v.23.xlsm", sheet_name='14-27')
+def load_data(sheet_name):
+    return pd.read_excel("./Data 2024 v.23.xlsm", sheet_name=sheet_name)
+    
+def get_sheet_names():
+    xl = pd.ExcelFile("./Data 2024 v.23.xlsm")
+    return xl.sheet_names
 
 # Funktion til at finde datoer for en lærer
 def find_teacher_dates(df, initials, relevant_teacher_columns):
@@ -36,10 +40,9 @@ def plot_dates(all_dates, work_dates):
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
-    sheet_name = '14-27'  # Eksempel, kan tilpasses
-    weeks = sheet_name.split('-')
-    all_dates = get_date_range_from_weeks(int(weeks[0]), int(weeks[1]))
-
+    sheet_names = get_sheet_names()
+    sheet_name = st.selectbox('Vælg et sheet:', sheet_names)
+    
     df = load_data(sheet_name)
     relevant_teacher_columns = [col for col in df.columns if 'Lærer' in col and df.columns.get_loc(col) < df.columns.get_loc("KODER")]
 
@@ -49,11 +52,14 @@ def main():
     if st.button('Vis Datoer'):
         work_dates = find_teacher_dates(df, teacher_initials, relevant_teacher_columns)
         work_dates = [pd.Timestamp(date) for date in work_dates]
+        weeks = sheet_name.split('-')
+        all_dates = get_date_range_from_weeks(int(weeks[0]), int(weeks[1]))
         fig = plot_dates(all_dates, work_dates)
         st.plotly_chart(fig)
 
 if __name__ == "__main__":
     main()
+
 
 
 
