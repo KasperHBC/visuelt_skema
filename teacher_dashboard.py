@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import openpyxl as op
-
 
 # Funktion til at indlæse data (du kan tilpasse stien eller tilføje argumenter efter behov)
 def load_data():
