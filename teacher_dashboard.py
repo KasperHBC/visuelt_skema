@@ -34,7 +34,7 @@ def plot_dates(all_dates, work_dates):
     df_dates = pd.DataFrame({
         'Date': all_dates,
         'Type': all_dates.isin(work_dates).map({True: 'Arbejdsdag', False: 'Fridag'}),
-        'WeekNumber': all_dates.week
+        'WeekNumber': all_dates.isocalendar().week
     })
     
     df_dates = df_dates.groupby('WeekNumber').agg({
