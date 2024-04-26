@@ -36,6 +36,8 @@ def plot_dates(all_dates, work_dates):
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
+        sheet_name = '14-27'  # Eksempel, kan tilpasses
+
     weeks = sheet_name.split('-')
     all_dates = get_date_range_from_weeks(int(weeks[0]), int(weeks[1]))
 
