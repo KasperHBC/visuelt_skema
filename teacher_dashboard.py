@@ -3,7 +3,7 @@ import pandas as pd
 
 # Funktion til at indlæse data (du kan tilpasse stien eller tilføje argumenter efter behov)
 def load_data():
-    return pd.read_excel('C:\Users\kahob\Downloads\Data 2024 v.23.xlsm', sheet_name='Data 2024 v.23')
+    return pd.read_excel('"C:\Users\kahob\Downloads\Data 2024 v.23.xlsm"', sheet_name='Data 2024 v.23')
 
 # Funktion til at finde datoer for en lærer
 def find_teacher_dates(df, initials, relevant_teacher_columns):
