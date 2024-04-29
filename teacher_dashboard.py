@@ -73,6 +73,8 @@ def plot_calendar_style(all_dates, work_dates):
             'ticktext': ['Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag']
         },
         yaxis_tickformat = 'Uge: ',  # Tilføj præfikset "Uge: " til y-aksens ticks
+
+        )
     # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
 
     
