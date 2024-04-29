@@ -83,7 +83,7 @@ def plot_calendar_style(all_dates, work_dates):
     fig.for_each_trace(lambda t: t.update(text="") if t.name == 'False' else None)
     
     # Opdater figurens størrelse, hvis det er nødvendigt
-    fig.update_layout(width=800, height=600)
+    fig.update_layout(width=400, height=600)
     
     return fig
 
