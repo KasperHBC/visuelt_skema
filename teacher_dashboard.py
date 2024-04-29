@@ -39,56 +39,40 @@ def plot_calendar_style(all_dates, work_dates):
         'WeekNumber': all_dates.isocalendar().week
     })
     
-    # Opret en liste over tekststrenger for datoerne, formateret som 'dag-måned'
-    date_texts = df_calendar['Date'].dt.strftime('%d-%m').tolist()
-
+    # Opret en kolonne til at repræsentere blokkene i visualiseringen
+    df_calendar['Block'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
+    
     # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
     df_calendar['WeekdayOffset'] = df_calendar.groupby('WeekNumber')['Weekday'].rank(method="first", ascending=True)
-
+    
     # Plotly bar chart
     fig = px.bar(
         df_calendar,
         x='WeekdayOffset',
         y='WeekNumber',
         color='Workday',
-        text=date_texts,  # Brug date_texts her
+        text='WeekNumber',
         color_discrete_map={True: 'blue', False: 'lightgrey'},
         orientation='h'
     )
     
-    # Opdater layoutet
+    # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
     fig.update_layout(
-        barmode='overlay',  # Ændret til 'overlay' for at sikre, at bars ikke bliver stablet
-        xaxis={
-            'visible': False, 
-            'showticklabels': False,
-            'range': [0, max(df_calendar['WeekdayOffset']) + 1]  # Sæt en passende rækkevidde for x-aksen
-        },
-        yaxis={
-            'visible': True, 
-            'showticklabels': True, 
-            'tickmode': 'array', 
-            'tickvals': df_calendar['WeekNumber'].unique(), 
-            'ticktext': ['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]
-        },
+        barmode='stack',
+        xaxis={'visible': False, 'showticklabels': False},
+        yaxis={'visible': True, 'showticklabels': True, 'tickmode': 'array', 'tickvals': df_calendar['WeekNumber'].unique(), 'ticktext': ['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]},
         showlegend=False
     )
     
     # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
     fig.update_traces(textposition='inside')
-    fig.for_each_trace(lambda t: t.update(text=[date_texts[i] if t.x[i] == 1 else '' for i in range(len(t.x))]))
-
-    # Sæt en fast bredde på bars for at undgå forskellige størrelser
-    fig.update_traces(
-    marker_line_color='black',  # Vælg en farve for divideren
-    marker_line_width=2,        # Vælg bredden på linjen for divideren
-    width=0.8                   # Juster bredden af hver bar til at give plads til divideren
-    )
-
+    fig.for_each_trace(lambda t: t.update(text="") if t.name == 'False' else None)
+    
     # Opdater figurens størrelse, hvis det er nødvendigt
     fig.update_layout(width=800, height=600)
-
+    
     return fig
+
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
