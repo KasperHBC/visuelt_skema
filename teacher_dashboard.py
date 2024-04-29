@@ -79,7 +79,7 @@ def plot_calendar_style(all_dates, work_dates):
     
     # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
     fig.update_traces(textposition='inside')
-    fig.for_each_trace(lambda t: t.update(text=lambda x: x['text'].strftime('%d-%m') if t.name == 'True' else ''))
+    fig.for_each_trace(lambda t: t.update(text=[df_calendar.loc[t.index, 'Date'].strftime('%d-%m') if val else '' for val in t.y]))
 
     # Opdater figurens størrelse, hvis det er nødvendigt
     fig.update_layout(width=800, height=600)
