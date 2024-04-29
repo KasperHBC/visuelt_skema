@@ -43,10 +43,8 @@ def plot_calendar_style(all_dates, work_dates):
     df_calendar['Block'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
     
     # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
-    df_calendar['WeekdayOffset'] = df_calendar.groupby('WeekNumber')['Weekday'].rank(method="first", ascending=True)
-    
-   # Sæt antallet af arbejdsdage per uge
-    num_workdays = 5
+     # Opret et fast 'WeekdayOffset' for hver ugedag (1-5 for mandag til fredag)
+    df_calendar['WeekdayOffset'] = df_calendar['Date'].dt.dayofweek.replace(range(5), range(1, 6))
     
     # Plotly bar chart
     fig = px.bar(
@@ -54,19 +52,31 @@ def plot_calendar_style(all_dates, work_dates):
         x='WeekdayOffset',
         y='WeekNumber',
         color='Workday',
-        text='WeekNumber',
+        text='Block',  # Tildeler 'Block' værdien til teksten
         color_discrete_map={True: 'blue', False: 'lightgrey'},
         orientation='h'
     )
     
-    # Fastlæg hver firkants bredde ved at bruge 'update_traces'
-    fig.update_traces(width=1)  # Sætter bredden af hver firkant til at være ens
+    # Fastlæg en fast bredde for hver bar for at sikre de er ensartede
+    fig.update_traces(width=0.8)  # Fastlægger en ensartet bredde for firkanterne
     
-    # Indstil x-aksen range til at have en fast værdi for antallet af arbejdsdage
-    fig.update_xaxes(range=[0.5, num_workdays + 0.5])  # Starter ved 0.5 og slutter ved 5.5 for at centrere baren
+    # Sæt x-aksen for at vise alle fem dage, med faste punkter for hver ugedag
+    fig.update_xaxes(
+        tickmode='array',
+        tickvals=list(range(1, 6)),  # faste værdier for ugedagene
+        ticktext=['Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag']
+    )
+    
+    # Fastlæg y-aksens ticks til at vise "Uge: [nummer]"
+    fig.update_yaxes(
+        tickmode='array',
+        tickvals=df_calendar['WeekNumber'].unique(),
+        ticktext=['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]
+    )
     
     # Tilpas layout for at sikre at firkanterne ikke bliver strukket og har ens størrelse
     fig.update_layout(
+        barmode='overlay',  # Bruger 'overlay' for at sikre, at firkanterne ikke bliver stablet
         xaxis={
             'tickmode': 'array',
             'tickvals': list(range(1, num_workdays + 1)),  # Fastlæg tickværdier for arbejdsdagene
@@ -76,6 +86,7 @@ def plot_calendar_style(all_dates, work_dates):
 
         )
     # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
 
     
     # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
