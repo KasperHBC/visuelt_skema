@@ -73,7 +73,6 @@ def plot_calendar_style(all_dates, work_dates):
     
     return fig
 
-
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
     st.title('Lærer Kalender Dashboard')
