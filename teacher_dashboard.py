@@ -34,46 +34,42 @@ def plot_calendar_style(all_dates, work_dates):
     # Opbyg DataFrame
     df_calendar = pd.DataFrame({
         'Date': all_dates,
-        'Workday': all_dates.isin(work_dates),
-        'Day': all_dates.day,
-        'WeekNumber': all_dates.isocalendar().week
+        'Workday': all_dates.isin(work_dates)
     })
-    
-    # Vi vil ikke bruge 'Block' i denne kontekst længere
-    df_calendar['DummyY'] = 1  # Bruges til at lave en ensartet y-værdi for barerne
 
-    # Brug dag i måneden som tekst for hver bar
-    df_calendar['DayText'] = df_calendar['Date'].dt.day
+    # Opret en kolonne til at repræsentere blokkene i visualiseringen
+    df_calendar['DayBlock'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
+    
+    # Opret en tekstkolonne for at vise datoen
+    df_calendar['DayText'] = df_calendar['Date'].dt.strftime('%d-%m')
 
     # Plotly bar chart
     fig = px.bar(
         df_calendar,
         x='Date',
-        y='DummyY',
+        y='DayBlock',
         text='DayText',
         color='Workday',
         color_discrete_map={True: 'blue', False: 'lightgrey'},
         orientation='v'
     )
     
-    # Opdater layoutet for at fjerne gaps mellem bars og sæt en fast bredde på bars
-    fig.update_traces(width=0.8, textposition='inside')
-
-    # Tilpas layoutet til kalenderstil
+    # Opdater layoutet for at gøre hver bar ens i størrelse og fjerne gaps mellem bars
+    fig.update_traces(marker_line_width=0)
     fig.update_layout(
-        barmode='overlay',
-        xaxis={'tickmode': 'array', 'tickvals': all_dates, 'ticktext': all_dates.strftime('%d-%m'), 'tickangle': -90},
+        xaxis={'tickmode': 'array', 'tickvals': df_calendar['Date'], 'ticktext': df_calendar['DayText']},
         yaxis={'visible': False, 'showticklabels': False},
-        showlegend=False
+        showlegend=False,
+        barmode='group'
     )
+    
+    # Opdater figur for at justere bredden af bars, så de fylder rummet jævnt
+    fig.update_traces(width=0.8)  # Juster efter behov for at passe med bredden af din figur
 
-    # Opdater figurens størrelse, hvis det er nødvendigt
-    fig.update_layout(width=800, height=400)
-
+    # Skjul teksten for ikke-arbejdsdage
+    fig.for_each_trace(lambda t: t.update(text="") if t.name == 'False' else None)
+    
     return fig
-
-
-
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
