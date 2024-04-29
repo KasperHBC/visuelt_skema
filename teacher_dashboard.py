@@ -30,92 +30,48 @@ def get_date_range_from_weekdays(start_week, end_week, year=2024):
     weekdays = all_dates[~all_dates.weekday.isin([5, 6])]
     return weekdays
 
-def plot_dates(all_dates, work_dates):
-    # Konverter work_dates fra en liste af Timestamps til en DatetimeIndex
-    work_dates_index = pd.DatetimeIndex(work_dates)
-
-    df_dates = pd.DataFrame({
-        'Date': all_dates,
-        'IsWorkday': all_dates.isin(work_dates_index)
-    })
-
-    # Konverter 'IsWorkday' til 'Type'
-    df_dates['Type'] = df_dates['IsWorkday'].map({True: 'Arbejdsdag', False: 'Fridag'})
-
-    # Få ugenummer for hver dato
-    df_dates['WeekNumber'] = df_dates['Date'].dt.isocalendar().week
-
-    # Gruppér efter ugenummer og find det minimum og maksimum dato for hver gruppe
-    df_grouped = df_dates.groupby('WeekNumber').agg({'Date': ['min', 'max'], 'Type': 'first'}).reset_index()
-    
-    # Renaming columns efter gruppering
-    df_grouped.columns = ['WeekNumber', 'Start', 'Finish', 'Type']
-
-    # Add one day to 'Finish' så at den sidste dag er inkluderet i tidslinjen
-    df_grouped['Finish'] = df_grouped['Finish'] + pd.Timedelta(days=1)
-    
-    fig = px.timeline(
-        df_grouped, 
-        x_start="Start", 
-        x_end="Finish", 
-        y="Type", 
-        text='WeekNumber',
-        color='Type',
-        labels={'Type': 'Dagstype', 'WeekNumber': 'Ugenummer'}, 
-        color_discrete_map={'Arbejdsdag': 'blue', 'Fridag': 'grey'}
-    )
-    
-    fig.update_traces(textposition='inside', marker=dict(line=dict(width=1, color='black')))
-    fig.update_layout(xaxis=dict(tickformat='%U', tickmode='linear'))
-    fig.update_yaxes(categoryorder='total ascending')
-
-    # Skjul teksten for fridage
-    fig.for_each_trace(lambda t: t.update(text="") if t.name == 'Fridag' else None)
-    
-    return fig
-
 def plot_calendar_style(all_dates, work_dates):
     # Opbyg DataFrame
     df_calendar = pd.DataFrame({
         'Date': all_dates,
         'Workday': all_dates.isin(work_dates),
-        'Weekday': all_dates.dayofweek,
+        'Day': all_dates.day,
         'WeekNumber': all_dates.isocalendar().week
     })
     
-    # Opret en kolonne til at repræsentere blokkene i visualiseringen
-    df_calendar['Block'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
-    
-    # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
-    df_calendar['WeekdayOffset'] = df_calendar.groupby('WeekNumber')['Weekday'].rank(method="first", ascending=True)
-    
+    # Vi vil ikke bruge 'Block' i denne kontekst længere
+    df_calendar['DummyY'] = 1  # Bruges til at lave en ensartet y-værdi for barerne
+
+    # Brug dag i måneden som tekst for hver bar
+    df_calendar['DayText'] = df_calendar['Date'].dt.day
+
     # Plotly bar chart
     fig = px.bar(
         df_calendar,
-        x='WeekdayOffset',
-        y='WeekNumber',
+        x='Date',
+        y='DummyY',
+        text='DayText',
         color='Workday',
-        text='WeekNumber',
         color_discrete_map={True: 'blue', False: 'lightgrey'},
-        orientation='h'
+        orientation='v'
     )
     
-    # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
+    # Opdater layoutet for at fjerne gaps mellem bars og sæt en fast bredde på bars
+    fig.update_traces(width=0.8, textposition='inside')
+
+    # Tilpas layoutet til kalenderstil
     fig.update_layout(
-        barmode='stack',
-        xaxis={'visible': False, 'showticklabels': False},
-        yaxis={'visible': True, 'showticklabels': True, 'tickmode': 'array', 'tickvals': df_calendar['WeekNumber'].unique(), 'ticktext': ['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]},
+        barmode='overlay',
+        xaxis={'tickmode': 'array', 'tickvals': all_dates, 'ticktext': all_dates.strftime('%d-%m'), 'tickangle': -90},
+        yaxis={'visible': False, 'showticklabels': False},
         showlegend=False
     )
-    
-    # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
-    fig.update_traces(textposition='inside')
-    fig.for_each_trace(lambda t: t.update(text="") if t.name == 'False' else None)
-    
+
     # Opdater figurens størrelse, hvis det er nødvendigt
-    fig.update_layout(width=800, height=600)
-    
+    fig.update_layout(width=800, height=400)
+
     return fig
+
 
 
 
