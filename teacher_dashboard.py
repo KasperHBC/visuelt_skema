@@ -45,6 +45,9 @@ def plot_calendar_style(all_dates, work_dates):
     # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
     df_calendar['WeekdayOffset'] = df_calendar.groupby('WeekNumber')['Weekday'].rank(method="first", ascending=True)
     
+   # Sæt antallet af arbejdsdage per uge
+    num_workdays = 5
+    
     # Plotly bar chart
     fig = px.bar(
         df_calendar,
@@ -56,18 +59,22 @@ def plot_calendar_style(all_dates, work_dates):
         orientation='h'
     )
     
-    # Indstil x-aksen range for at sikre, at hver firkant har samme størrelse
-    fig.update_xaxes(range=[0, 5])  # Der er 5 arbejdsdage i en uge, så vi indstiller bredden til 5
-
+    # Fastlæg hver firkants bredde ved at bruge 'update_traces'
+    fig.update_traces(width=1)  # Sætter bredden af hver firkant til at være ens
     
-    # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
+    # Indstil x-aksen range til at have en fast værdi for antallet af arbejdsdage
+    fig.update_xaxes(range=[0.5, num_workdays + 0.5])  # Starter ved 0.5 og slutter ved 5.5 for at centrere baren
+    
+    # Tilpas layout for at sikre at firkanterne ikke bliver strukket og har ens størrelse
     fig.update_layout(
-        barmode='stack',
-        xaxis={'visible': False, 'showticklabels': False},
-        yaxis={'visible': True, 'showticklabels': True, 'tickmode': 'array', 'tickvals': df_calendar['WeekNumber'].unique(), 'ticktext': ['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]},
-        showlegend=False,
-        margin=dict(l=0, r=0, t=20, b=20)  # Reducer margin for at tilpasse til en fast størrelse
-    )
+        xaxis={
+            'tickmode': 'array',
+            'tickvals': list(range(1, num_workdays + 1)),  # Fastlæg tickværdier for arbejdsdagene
+            'ticktext': ['Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag']
+        },
+        yaxis_tickformat = 'Uge: ',  # Tilføj præfikset "Uge: " til y-aksens ticks
+    # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
+
     
     # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
     fig.update_traces(textposition='inside')
