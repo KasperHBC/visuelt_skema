@@ -79,7 +79,11 @@ def plot_calendar_style(all_dates, work_dates):
     fig.for_each_trace(lambda t: t.update(text=[date_texts[i] if t.x[i] == 1 else '' for i in range(len(t.x))]))
 
     # Sæt en fast bredde på bars for at undgå forskellige størrelser
-    fig.update_traces(width=0.8)  # Juster efter behov
+    fig.update_traces(
+    marker_line_color='white',  # Vælg en farve for divideren
+    marker_line_width=2,        # Vælg bredden på linjen for divideren
+    width=0.8                   # Juster bredden af hver bar til at give plads til divideren
+    )
 
     # Opdater figurens størrelse, hvis det er nødvendigt
     fig.update_layout(width=800, height=600)
