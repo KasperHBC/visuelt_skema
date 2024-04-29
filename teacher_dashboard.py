@@ -42,9 +42,12 @@ def plot_calendar_style(all_dates, work_dates):
     # Opret en kolonne til at repræsentere blokkene i visualiseringen
     df_calendar['Block'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
     
-    # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
+   
      # Opret et fast 'WeekdayOffset' for hver ugedag (1-5 for mandag til fredag)
     df_calendar['WeekdayOffset'] = df_calendar['Date'].dt.dayofweek.replace(range(5), range(1, 6))
+
+     # Sæt antallet af arbejdsdage per uge
+    num_workdays = 5
     
     # Plotly bar chart
     fig = px.bar(
