@@ -34,42 +34,45 @@ def plot_calendar_style(all_dates, work_dates):
     # Opbyg DataFrame
     df_calendar = pd.DataFrame({
         'Date': all_dates,
-        'Workday': all_dates.isin(work_dates)
+        'Workday': all_dates.isin(work_dates),
+        'Weekday': all_dates.dayofweek,
+        'WeekNumber': all_dates.isocalendar().week
     })
-
-    # Opret en kolonne til at repræsentere blokkene i visualiseringen
-    df_calendar['DayBlock'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
     
-    # Opret en tekstkolonne for at vise datoen
-    df_calendar['DayText'] = df_calendar['Date'].dt.strftime('%d-%m')
-
+    # Opret en kolonne til at repræsentere blokkene i visualiseringen
+    df_calendar['Block'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
+    
+    # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
+    df_calendar['WeekdayOffset'] = df_calendar.groupby('WeekNumber')['Weekday'].rank(method="first", ascending=True)
+    
     # Plotly bar chart
     fig = px.bar(
         df_calendar,
-        x='Date',
-        y='DayBlock',
-        text='DayText',
+        x='WeekdayOffset',
+        y='WeekNumber',
         color='Workday',
+        text='WeekNumber',
         color_discrete_map={True: 'blue', False: 'lightgrey'},
-        orientation='v'
+        orientation='h'
     )
     
-    # Opdater layoutet for at gøre hver bar ens i størrelse og fjerne gaps mellem bars
-    fig.update_traces(marker_line_width=0)
+    # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
     fig.update_layout(
-        xaxis={'tickmode': 'array', 'tickvals': df_calendar['Date'], 'ticktext': df_calendar['DayText']},
-        yaxis={'visible': False, 'showticklabels': False},
-        showlegend=False,
-        barmode='group'
+        barmode='stack',
+        xaxis={'visible': False, 'showticklabels': False},
+        yaxis={'visible': True, 'showticklabels': True, 'tickmode': 'array', 'tickvals': df_calendar['WeekNumber'].unique(), 'ticktext': ['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]},
+        showlegend=False
     )
     
-    # Opdater figur for at justere bredden af bars, så de fylder rummet jævnt
-    fig.update_traces(width=0.8)  # Juster efter behov for at passe med bredden af din figur
-
-    # Skjul teksten for ikke-arbejdsdage
+    # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
+    fig.update_traces(textposition='inside')
     fig.for_each_trace(lambda t: t.update(text="") if t.name == 'False' else None)
     
+    # Opdater figurens størrelse, hvis det er nødvendigt
+    fig.update_layout(width=800, height=600)
+    
     return fig
+
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
