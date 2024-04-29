@@ -80,9 +80,9 @@ def plot_calendar_style(all_dates, work_dates):
 
     # Sæt en fast bredde på bars for at undgå forskellige størrelser
     fig.update_traces(
-    marker_line_color='white',  # Vælg en farve for divideren
-    marker_line_width=2,        # Vælg bredden på linjen for divideren
-    width=0.8                   # Juster bredden af hver bar til at give plads til divideren
+    marker_line_color='black',  # Vælg en farve for divideren
+    marker_line_width=4,        # Vælg bredden på linjen for divideren
+    width=0.7                   # Juster bredden af hver bar til at give plads til divideren
     )
 
     # Opdater figurens størrelse, hvis det er nødvendigt
