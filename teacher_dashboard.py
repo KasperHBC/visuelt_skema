@@ -56,12 +56,17 @@ def plot_calendar_style(all_dates, work_dates):
         orientation='h'
     )
     
+    # Indstil x-aksen range for at sikre, at hver firkant har samme størrelse
+    max_weekday_offset = df_calendar['WeekdayOffset'].max()
+    fig.update_xaxes(range=[0, max_weekday_offset + 1])  # Tilsætter +1 for at inkludere sidste firkant
+    
     # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
     fig.update_layout(
         barmode='stack',
         xaxis={'visible': False, 'showticklabels': False},
         yaxis={'visible': True, 'showticklabels': True, 'tickmode': 'array', 'tickvals': df_calendar['WeekNumber'].unique(), 'ticktext': ['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]},
-        showlegend=False
+        showlegend=False,
+        margin=dict(l=0, r=0, t=20, b=20)  # Reducer margin for at tilpasse til en fast størrelse
     )
     
     # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
@@ -72,6 +77,7 @@ def plot_calendar_style(all_dates, work_dates):
     fig.update_layout(width=800, height=600)
     
     return fig
+
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
