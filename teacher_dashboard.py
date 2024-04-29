@@ -57,29 +57,27 @@ def plot_calendar_style(all_dates, work_dates):
         text='Date', # Vis datoen som tekst inde i hver bar
         color_discrete_map={True: 'blue', False: 'lightgrey'}, # Definer farver for arbejdsdag og fridag
         orientation='h' # Horisontale bars
-)
-# Opdater layoutet for at gøre bars ensartede og juster x-aksen for at starte fra 1
-fig.update_layout(
-    barmode='relative',  # Relative mode betyder, at bars ikke stables over hinanden
-    xaxis={'type': 'category', 'categoryorder': 'category ascending', 'tickmode': 'array', 'tickvals': list(range(1, 8)), 'ticktext': list('MTWTFSS')},
-    yaxis={'visible': False, 'showticklabels': False},  # Skjul y-aksen
-    showlegend=False,  # Skjul legenden
-    plot_bgcolor='white'  # Sæt baggrundsfarven til hvid
-)
-
-# Fjern gridlinjer
-fig.update_xaxes(showgrid=False)
-fig.update_yaxes(showgrid=False)
-
-# Sæt tekstfarven til hvid for fridage, så den er usynlig
-fig.update_traces(textfont_color='white', selector={'name': 'False'})
-
-# Sæt en ensartet bredde for alle bars og indstil barernes farve
-fig.update_traces(width=0.4, marker_line_color='black', marker_line_width=0.5)
+    )
+    # Opdater layoutet for at gøre bars ensartede og juster x-aksen for at starte fra 1
+    fig.update_layout(
+        barmode='relative',  # Relative mode betyder, at bars ikke stables over hinanden
+        xaxis={'type': 'category', 'categoryorder': 'category ascending', 'tickmode': 'array', 'tickvals': list(range(1, 8)), 'ticktext': list('MTWTFSS')},
+        yaxis={'visible': False, 'showticklabels': False},  # Skjul y-aksen
+        showlegend=False,  # Skjul legenden
+        plot_bgcolor='white'  # Sæt baggrundsfarven til hvid
+    )
+    
+    # Fjern gridlinjer
+    fig.update_xaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False)
+    
+    # Sæt tekstfarven til hvid for fridage, så den er usynlig
+    fig.update_traces(textfont_color='white', selector={'name': 'False'})
+    
+    # Sæt en ensartet bredde for alle bars og indstil barernes farve
+    fig.update_traces(width=0.4, marker_line_color='black', marker_line_width=0.5)
 
 return fig
-
-
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
