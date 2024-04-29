@@ -34,50 +34,58 @@ def plot_calendar_style(all_dates, work_dates):
     # Opbyg DataFrame
     df_calendar = pd.DataFrame({
         'Date': all_dates,
+        'Workday': all_dates.isin(work_dates),
         'Weekday': all_dates.dayofweek,
         'WeekNumber': all_dates.isocalendar().week
     })
     
     # Opret en kolonne til at repræsentere blokkene i visualiseringen
-    df_calendar['Block'] = 1  # Alle blokke har samme størrelse
-    
-    # Tilføj kolonne, der angiver om dagen er en arbejdsdag
-    df_calendar['Workday'] = df_calendar['Date'].isin(work_dates)
+    df_calendar['Block'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
     
     # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
-    df_calendar['WeekdayOffset'] = df_calendar['Weekday'] + 1  # Plus 1 så vi starter fra 1 i stedet for 0
+    df_calendar['WeekdayOffset'] = df_calendar.groupby('WeekNumber')['Weekday'].rank(method="first", ascending=True)
     
     # Plotly bar chart
     fig = px.bar(
         df_calendar,
-        x='WeekdayOffset',  # x-positionen for hver bar
-        y='Block',  # Alle bars har en højde på 1
-        facet_row='WeekNumber',  # Opret en række for hver uge
-        color='Workday',  # Farv bars baseret på om det er en arbejdsdag
-        text='Date', # Vis datoen som tekst inde i hver bar
-        color_discrete_map={True: 'blue', False: 'lightgrey'}, # Definer farver for arbejdsdag og fridag
-        orientation='h' # Horisontale bars
+        x='WeekdayOffset',
+        y='WeekNumber',
+        color='Workday',
+        text='Date',
+        color_discrete_map={True: 'blue', False: 'lightgrey'},
+        orientation='h'
     )
-    # Opdater layoutet for at gøre bars ensartede og juster x-aksen for at starte fra 1
+    
+    # Sæt barernes bredde til en fast værdi for ensartethed
+    fig.update_traces(width=0.4) # Du kan justere denne værdi efter behov for at passe til din layout
+    
+    # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
     fig.update_layout(
-        barmode='relative',  # Relative mode betyder, at bars ikke stables over hinanden
-        xaxis={'type': 'category', 'categoryorder': 'category ascending', 'tickmode': 'array', 'tickvals': list(range(1, 8)), 'ticktext': list('MTWTFSS')},
-        yaxis={'visible': False, 'showticklabels': False},  # Skjul y-aksen
-        showlegend=False,  # Skjul legenden
-        plot_bgcolor='white'  # Sæt baggrundsfarven til hvid
+        barmode='overlay', # Ændret til 'overlay' for at sikre, at bars ikke bliver stablet
+        xaxis={
+            'visible': False, 
+            'showticklabels': False,
+            'range': [0.5, 7.5] # Sætter rækkevidden til at matche antallet af dage i ugen (plus lidt margen)
+        },
+        yaxis={
+            'visible': True, 
+            'showticklabels': True, 
+            'tickmode': 'array', 
+            'tickvals': df_calendar['WeekNumber'].unique(), 
+            'ticktext': ['Uge: ' + str(wn) for wn in df_calendar['WeekNumber'].unique()]
+        },
+        showlegend=False
     )
     
-    # Fjern gridlinjer
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
-    
-    # Sæt tekstfarven til hvid for fridage, så den er usynlig
-    fig.update_traces(textfont_color='white', selector={'name': 'False'})
-    
-    # Sæt en ensartet bredde for alle bars og indstil barernes farve
-    fig.update_traces(width=0.4, marker_line_color='black', marker_line_width=0.5)
+    # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
+    fig.update_traces(textposition='inside')
+    fig.for_each_trace(lambda t: t.update(text=lambda x: x['text'].strftime('%d-%m') if t.name == 'True' else ''))
 
-return fig
+    # Opdater figurens størrelse, hvis det er nødvendigt
+    fig.update_layout(width=800, height=600)
+    
+    return fig
+
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
