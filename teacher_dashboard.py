@@ -39,33 +39,30 @@ def plot_calendar_style(all_dates, work_dates):
         'WeekNumber': all_dates.isocalendar().week
     })
     
-    # Opret en kolonne til at repræsentere blokkene i visualiseringen
-    df_calendar['Block'] = df_calendar['Workday'].apply(lambda x: 1 if x else 0)
-    
+    # Opret en liste over tekststrenger for datoerne, formateret som 'dag-måned'
+    date_texts = df_calendar['Date'].dt.strftime('%d-%m').tolist()
+
     # Vi skal bruge 'Weekday' til at bestemme placeringen af hver bar i gitteret
     df_calendar['WeekdayOffset'] = df_calendar.groupby('WeekNumber')['Weekday'].rank(method="first", ascending=True)
-    
+
     # Plotly bar chart
     fig = px.bar(
         df_calendar,
         x='WeekdayOffset',
         y='WeekNumber',
         color='Workday',
-        text='Date',
+        text=date_texts,  # Brug date_texts her
         color_discrete_map={True: 'blue', False: 'lightgrey'},
         orientation='h'
     )
     
-    # Sæt barernes bredde til en fast værdi for ensartethed
-    fig.update_traces(width=0.4) # Du kan justere denne værdi efter behov for at passe til din layout
-    
-    # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
+    # Opdater layoutet
     fig.update_layout(
-        barmode='overlay', # Ændret til 'overlay' for at sikre, at bars ikke bliver stablet
+        barmode='overlay',  # Ændret til 'overlay' for at sikre, at bars ikke bliver stablet
         xaxis={
             'visible': False, 
             'showticklabels': False,
-            'range': [0.5, 7.5] # Sætter rækkevidden til at matche antallet af dage i ugen (plus lidt margen)
+            'range': [0, max(df_calendar['WeekdayOffset']) + 1]  # Sæt en passende rækkevidde for x-aksen
         },
         yaxis={
             'visible': True, 
@@ -79,13 +76,15 @@ def plot_calendar_style(all_dates, work_dates):
     
     # Opdater tekstpositionen og skjul den for ikke-arbejdsdage
     fig.update_traces(textposition='inside')
-    fig.for_each_trace(lambda t: t.update(text=[df_calendar.loc[t.index, 'Date'].strftime('%d-%m') if val else '' for val in t.y]))
+    fig.for_each_trace(lambda t: t.update(text=[date_texts[i] if t.x[i] == 1 else '' for i in range(len(t.x))]))
+
+    # Sæt en fast bredde på bars for at undgå forskellige størrelser
+    fig.update_traces(width=0.8)  # Juster efter behov
 
     # Opdater figurens størrelse, hvis det er nødvendigt
     fig.update_layout(width=800, height=600)
-    
-    return fig
 
+    return fig
 
 # Opdater 'main' funktionen til at inkludere visualisering
 def main():
