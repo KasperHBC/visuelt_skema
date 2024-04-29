@@ -57,8 +57,8 @@ def plot_calendar_style(all_dates, work_dates):
     )
     
     # Indstil x-aksen range for at sikre, at hver firkant har samme størrelse
-    max_weekday_offset = df_calendar['WeekdayOffset'].max()
-    fig.update_xaxes(range=[0, 5])  # Tilsætter +1 for at inkludere sidste firkant
+    fig.update_xaxes(range=[0, 5])  # Der er 5 arbejdsdage i en uge, så vi indstiller bredden til 5
+
     
     # Opdater layoutet for at fjerne gaps mellem bares, og indstil y-aksen til at vise ugenumre
     fig.update_layout(
